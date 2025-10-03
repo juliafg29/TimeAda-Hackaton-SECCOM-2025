@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../models/client.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
 
@@ -33,13 +34,39 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         allowedExtensions: ['pdf', 'doc', 'docx', 'txt'],
       );
 
-      if (result != null) {
-        setState(() {
-          _fileName = result.files.first.name;
-          _fileBytes = result.files.first.bytes;
-        });
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Para web, usar path se bytes for null
+        Uint8List? fileBytes = file.bytes;
+        if (fileBytes == null && file.path != null) {
+          // Em plataformas desktop/mobile, ler o arquivo do path
+          try {
+            fileBytes = await File(file.path!).readAsBytes();
+          } catch (e) {
+            print('Error reading file from path: $e');
+          }
+        }
+
+        if (fileBytes != null) {
+          setState(() {
+            _fileName = file.name;
+            _fileBytes = fileBytes;
+          });
+
+          // Debug logs
+          print('Debug - File selected: $_fileName');
+          print('Debug - File bytes length: ${_fileBytes?.length}');
+          _showMessage('Arquivo selecionado: $_fileName');
+        } else {
+          _showMessage('Erro: Não foi possível ler o arquivo selecionado',
+              isError: true);
+        }
+      } else {
+        print('Debug - No file selected or canceled');
       }
     } catch (e) {
+      print('Error in _pickFile: $e');
       _showMessage('Erro ao selecionar arquivo: $e', isError: true);
     }
   }
@@ -50,8 +77,21 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       _showMessage('Por favor, selecione um cliente', isError: true);
       return;
     }
-    if (_fileName == null || _fileBytes == null) {
+
+    // Debug logs
+    print('Debug - _fileName: $_fileName');
+    print('Debug - _fileBytes length: ${_fileBytes?.length}');
+    print('Debug - _fileBytes is null: ${_fileBytes == null}');
+
+    if (_fileName == null || _fileName!.isEmpty) {
       _showMessage('Por favor, selecione um documento', isError: true);
+      return;
+    }
+
+    if (_fileBytes == null || _fileBytes!.isEmpty) {
+      _showMessage(
+          'Erro: Arquivo selecionado está vazio. Tente selecionar novamente.',
+          isError: true);
       return;
     }
 
@@ -76,7 +116,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         'timestamp': DateTime.now().toIso8601String(),
       };
 
-      // Aqui você fará a chamada real para o n8n
       // Por enquanto, apenas simulando
       await Future.delayed(const Duration(seconds: 2));
 
@@ -102,7 +141,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       print('Dados para enviar ao n8n: ${json.encode(data)}');
       _showMessage('Documento enviado com sucesso para o n8n!');
       _clearForm();
-
     } catch (e) {
       _showMessage('Erro: $e', isError: true);
     } finally {
@@ -117,6 +155,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       _fileBytes = null;
       _actionController.clear();
     });
+    print('Debug - Form cleared');
   }
 
   void _showMessage(String message, {bool isError = false}) {
@@ -283,23 +322,23 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         ),
                         child: _isSending
                             ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        )
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
                             : const Text(
-                          'ENVIAR PARA CLIENTE',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
+                                'ENVIAR PARA CLIENTE',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
                       ),
                     ],
                   ),
