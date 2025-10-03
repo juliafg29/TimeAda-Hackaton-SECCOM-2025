@@ -6,12 +6,12 @@ import '../models/client.dart';
 
 class ClientFormScreen extends StatefulWidget {
   final Client? client;
-  final int attorneyId;  // Add this parameter
+  final int attorneyId; // Add this parameter
 
   const ClientFormScreen({
     Key? key,
     this.client,
-    required this.attorneyId,  // Make it required
+    required this.attorneyId, // Make it required
   }) : super(key: key);
 
   @override
@@ -42,7 +42,6 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
 
       try {
         if (widget.client == null) {
-          // Pass both client and attorneyId
           await DatabaseHelper.instance.insertClient(client, widget.attorneyId);
         } else {
           await DatabaseHelper.instance.updateClient(client);
@@ -144,7 +143,8 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Por favor insira o telefone do cliente';
                           }
-                          final digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
+                          final digitsOnly =
+                              value.replaceAll(RegExp(r'[^0-9]'), '');
                           if (digitsOnly.length < 10) {
                             return 'Telefone incompleto';
                           }
@@ -194,16 +194,14 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     _phoneController.dispose();
     super.dispose();
   }
-
 }
-
 
 class PhoneInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue,
-      TextEditingValue newValue,
-      ) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final text = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
 
     if (text.isEmpty) {

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'documents_screen.dart';
-import 'login_screen.dart';
+
 import '../database/database_helper.dart';
 import '../models/client.dart';
+import 'documents_screen.dart';
+import 'home_screen.dart';
+import 'login_screen.dart';
 
 class MainTabsScreen extends StatefulWidget {
   final String attorneyName;
@@ -57,7 +58,7 @@ class _MainTabsScreenState extends State<MainTabsScreen> with SingleTickerProvid
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Fechar o diálogo
+              Navigator.pop(context);
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(

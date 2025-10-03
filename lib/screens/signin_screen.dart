@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/attorney.dart';
 import '../database/database_helper.dart';
 
@@ -31,10 +32,13 @@ class _SigninScreenState extends State<SigninScreen> {
   Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
       try {
+        // Extrair apenas os números do telefone
+        final phoneDigitsOnly = _phoneController.text.replaceAll(RegExp(r'[^0-9]'), '');
+        
         final attorney = Attorney(
           name: _nameController.text,
           n8nWebhookUrl: _n8nUrlController.text,
-          phone: int.tryParse(_phoneController.text),
+          phone: int.tryParse(phoneDigitsOnly),
         );
 
         final id = await DatabaseHelper.instance.insertAttorney(attorney);
@@ -88,6 +92,9 @@ class _SigninScreenState extends State<SigninScreen> {
                     TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        PhoneInputFormatter(),
+                      ],
                       decoration: const InputDecoration(
                         labelText: 'Telefone',
                         border: OutlineInputBorder(),
@@ -97,8 +104,9 @@ class _SigninScreenState extends State<SigninScreen> {
                         if (value?.isEmpty == true) {
                           return 'Campo obrigatório';
                         }
-                        if (int.tryParse(value!) == null) {
-                          return 'Digite apenas números';
+                        final digitsOnly = value!.replaceAll(RegExp(r'[^0-9]'), '');
+                        if (digitsOnly.length < 10) {
+                          return 'Telefone deve ter pelo menos 10 dígitos';
                         }
                         return null;
                       },
@@ -135,5 +143,36 @@ class _SigninScreenState extends State<SigninScreen> {
     _n8nUrlController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+}
+
+class PhoneInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    if (text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    String formatted = '';
+
+    if (text.length >= 1) {
+      formatted = '(${text.substring(0, text.length > 2 ? 2 : text.length)}';
+    }
+    if (text.length >= 3) {
+      formatted += ') ${text.substring(2, text.length > 7 ? 7 : text.length)}';
+    }
+    if (text.length >= 8) {
+      formatted += '-${text.substring(7, text.length > 11 ? 11 : text.length)}';
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
   }
 }

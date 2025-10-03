@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart';
+
 import 'database/database_helper.dart';
+import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    print('Initializing database...');
     await DatabaseHelper.instance.database;
-    print('Database initialized successfully');
   } catch (e) {
-    print('Error initializing database: $e');
-  }
+    debugPrint('Database initialization error: $e');}
   runApp(const MyApp());
 }
 

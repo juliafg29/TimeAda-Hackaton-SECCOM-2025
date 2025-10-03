@@ -20,19 +20,14 @@ class DatabaseHelper {
 
   Future<Database> _initDB() async {
     try {
-      print('Initializing database...');
-      
       if (Platform.isAndroid || Platform.isIOS) {
         // Use sqflite for mobile platforms
-        print('Using sqflite for mobile platform');
         return await openDatabase(
           'law_office.db',
           version: 1,
           onCreate: _createDB,
         );
       } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-        // Use sqflite_ffi for desktop platforms
-        print('Using sqflite_ffi for desktop platform');
         sqfliteFfiInit();
         databaseFactory = databaseFactoryFfi;
         return await databaseFactory.openDatabase(
@@ -46,14 +41,12 @@ class DatabaseHelper {
         throw UnsupportedError('Unsupported platform');
       }
     } catch (e) {
-      print('Error initializing database: $e');
       rethrow;
     }
   }
 
   Future _createDB(Database db, int version) async {
     try {
-      // Create clients table
       await db.execute('''
         CREATE TABLE clients (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,7 +55,6 @@ class DatabaseHelper {
         )
       ''');
 
-      // Create attorney table  
       await db.execute('''
         CREATE TABLE attorney (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -72,7 +64,6 @@ class DatabaseHelper {
         )
       ''');
 
-      // Create relationship table
       await db.execute('''
         CREATE TABLE attorney_clientes_relationship (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,10 +73,7 @@ class DatabaseHelper {
           FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE
         )
       ''');
-      
-      print('Database tables created successfully');
     } catch (e) {
-      print('Error creating database tables: $e');
       rethrow;
     }
   }
@@ -96,7 +84,6 @@ class DatabaseHelper {
   Future<int> insertClient(Client client, int attorneyId) async {
     final db = await database;
 
-    // Verificar se o cliente já existe
     final existingClient = await db.query(
       'clients',
       where: 'phone = ?',
@@ -106,14 +93,11 @@ class DatabaseHelper {
     late int clientId;
 
     if (existingClient.isEmpty) {
-      // Cliente não existe, inserir novo
       clientId = await db.insert('clients', client.toMap());
     } else {
-      // Cliente já existe, usar o ID existente
       clientId = existingClient.first['id'] as int;
     }
 
-    // Criar relação advogado-cliente
     await db.insert('attorney_clientes_relationship', {
       'attorney_id': attorneyId,
       'client_id': clientId,
@@ -121,6 +105,7 @@ class DatabaseHelper {
 
     return clientId;
   }
+
   Future<List<Client>> getAllClients() async {
     final db = await database;
     final result = await db.query('clients', orderBy: 'name ASC');
@@ -182,7 +167,8 @@ class DatabaseHelper {
   // ------------------------
   // relacionamento advogado-clientes
 
-  Future<int> insertAttorneyClientRelationship(int attorneyId, int clientId) async {
+  Future<int> insertAttorneyClientRelationship(
+      int attorneyId, int clientId) async {
     final db = await database;
     return await db.insert('attorney_clientes_relationship', {
       'attorney_id': attorneyId,
@@ -190,7 +176,8 @@ class DatabaseHelper {
     });
   }
 
-  Future<int> deleteAttorneyClientRelationship(int attorneyId, int clientId) async {
+  Future<int> deleteAttorneyClientRelationship(
+      int attorneyId, int clientId) async {
     final db = await database;
     return await db.delete(
       'attorney_clientes_relationship',
@@ -213,23 +200,20 @@ class DatabaseHelper {
 
   Future<int> removeClientFromAttorney(int attorneyId, int clientId) async {
     final db = await database;
-    
-    // First, remove the relationship
+
     await deleteAttorneyClientRelationship(attorneyId, clientId);
-    
-    // Check if client has any other relationships
+
     final remainingRelationships = await db.query(
       'attorney_clientes_relationship',
       where: 'client_id = ?',
       whereArgs: [clientId],
     );
-    
-    // If no more relationships exist, delete the client completely
+
     if (remainingRelationships.isEmpty) {
       return await deleteClient(clientId);
     }
-    
-    return 1; // Success, but client was kept due to other relationships
+
+    return 1;
   }
 
   Future close() async {

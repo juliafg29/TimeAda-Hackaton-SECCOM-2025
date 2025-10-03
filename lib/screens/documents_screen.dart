@@ -18,6 +18,7 @@ class DocumentsScreen extends StatefulWidget {
 class _DocumentsScreenState extends State<DocumentsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _actionController = TextEditingController();
+  final _clientMessageController = TextEditingController();
   final _n8nUrlController = TextEditingController(
     text: 'https://your-n8n-instance.com/webhook/document',
   );
@@ -101,8 +102,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       // Converter bytes para base64
       final base64File = base64Encode(_fileBytes!);
 
-      // Preparar dados para enviar ao n8n
-      final data = {
+      // Primeira requisição: Documento principal
+      final documentData = {
+        'type': 'document',
         'client': {
           'id': _selectedClient!.id,
           'name': _selectedClient!.name,
@@ -116,30 +118,61 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         'timestamp': DateTime.now().toIso8601String(),
       };
 
-      // Por enquanto, apenas simulando
-      await Future.delayed(const Duration(seconds: 2));
+      // Simular primeira requisição
+      await Future.delayed(const Duration(seconds: 1));
+      print('Primeira requisição - Documento: ${json.encode(documentData)}');
+      _showMessage('Documento enviado para processamento...');
 
-      // Exemplo de como enviar (descomente quando tiver o endpoint real):
+      // Segunda requisição: Mensagem do cliente (se preenchida)
+      if (_clientMessageController.text.trim().isNotEmpty) {
+        final messageData = {
+          'type': 'client_message',
+          'client': {
+            'id': _selectedClient!.id,
+            'name': _selectedClient!.name,
+            'phone': _selectedClient!.phone,
+          },
+          'message': _clientMessageController.text.trim(),
+          'related_document': _fileName,
+          'timestamp': DateTime.now().toIso8601String(),
+        };
+
+        // Simular segunda requisição
+        await Future.delayed(const Duration(seconds: 1));
+        print('Segunda requisição - Mensagem: ${json.encode(messageData)}');
+        _showMessage('Mensagem do cliente enviada!');
+      }
+
+      // Exemplo de como enviar as requisições reais:
       /*
       import 'package:http/http.dart' as http;
 
-      final response = await http.post(
+      // Primeira requisição - Documento
+      final documentResponse = await http.post(
         Uri.parse(_n8nUrlController.text),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode(data),
+        body: json.encode(documentData),
       );
 
-      if (response.statusCode == 200) {
-        _showMessage('Documento enviado com sucesso!');
-        _clearForm();
-      } else {
-        _showMessage('Erro ao enviar documento: ${response.statusCode}', isError: true);
+      if (documentResponse.statusCode != 200) {
+        throw Exception('Erro ao enviar documento: ${documentResponse.statusCode}');
+      }
+
+      // Segunda requisição - Mensagem do cliente (se preenchida)
+      if (_clientMessageController.text.trim().isNotEmpty) {
+        final messageResponse = await http.post(
+          Uri.parse(_n8nUrlController.text),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(messageData),
+        );
+
+        if (messageResponse.statusCode != 200) {
+          print('Aviso: Erro ao enviar mensagem do cliente: ${messageResponse.statusCode}');
+        }
       }
       */
 
-      // Simulação de sucesso
-      print('Dados para enviar ao n8n: ${json.encode(data)}');
-      _showMessage('Documento enviado com sucesso para o n8n!');
+      _showMessage('Todas as informações foram enviadas com sucesso!');
       _clearForm();
     } catch (e) {
       _showMessage('Erro: $e', isError: true);
@@ -154,6 +187,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       _fileName = null;
       _fileBytes = null;
       _actionController.clear();
+      _clientMessageController.clear();
     });
     print('Debug - Form cleared');
   }
@@ -312,6 +346,24 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         ),
                       ),
 
+                      const SizedBox(height: 20),
+
+                      // Client Message (Optional)
+                      TextFormField(
+                        controller: _clientMessageController,
+                        decoration: const InputDecoration(
+                          labelText: 'Mensagem adicional do cliente (opcional)',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.message_outlined),
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText:
+                              'Ex: Observações, instruções especiais, comentários do cliente...',
+                        ),
+                        maxLines: 3,
+                        textInputAction: TextInputAction.newline,
+                      ),
+
                       const SizedBox(height: 32),
 
                       // Send Button
@@ -354,6 +406,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   @override
   void dispose() {
     _actionController.dispose();
+    _clientMessageController.dispose();
     _n8nUrlController.dispose();
     super.dispose();
   }

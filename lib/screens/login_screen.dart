@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sistema_advocacia/screens/signin_screen.dart';
+
 import '../database/database_helper.dart';
 import '../models/attorney.dart';
 import 'main_tabs_screen.dart';
@@ -20,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final name = _nomeController.text;
       final attorneys = await DatabaseHelper.instance.getAllAttorneys();
       final attorney = attorneys.firstWhere(
-            (a) => a.name.toLowerCase() == name.toLowerCase(),
+        (a) => a.name.toLowerCase() == name.toLowerCase(),
         orElse: () => Attorney(name: '', n8nWebhookUrl: '', phone: null),
       );
 
@@ -59,6 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
