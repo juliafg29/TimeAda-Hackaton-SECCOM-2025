@@ -1,3 +1,5 @@
+#Código sugerido por GPT-5 em 03 de outubro de 2025
+
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -5,7 +7,6 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 
 # Registrar Arial (se não tiver, pode usar DejaVuSans como substituto)
-#pdfmetrics.registerFont(TTFont("Arial", "DejaVuSans.ttf"))
 pdfmetrics.registerFont(TTFont("Arial", "C:/Windows/Fonts/arial.ttf"))
 
 
