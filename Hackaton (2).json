@@ -1,0 +1,1887 @@
+{
+  "name": "Hackaton",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "8d02d3f1-b257-4bf9-b532-6411f45acd81",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -940,
+        -40
+      ],
+      "id": "e6f1dd07-fc97-4ffa-85d2-6b03a05e2223",
+      "name": "Webhook",
+      "webhookId": "8d02d3f1-b257-4bf9-b532-6411f45acd81"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "896952e6-5cbf-4f4a-b000-e2fc8597a82b",
+              "leftValue": "={{ $json.fromMe }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -60,
+        -140
+      ],
+      "id": "2d3d39d3-d0d2-4dd6-aafa-bb5d4575ff67",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields2').item.json.concatenated_messages }}\n\n----------------------\nQuantidade de documentos na memória: {{ $json.docs.length }}",
+        "options": {
+          "systemMessage": "Você é um assistente jurídico do escritório Dooor Advogados.\n\nO escritório Dooor Advogados está localizado em São Paulo – SP, na Av. Paulista, 1234, 10º andar.\n\nO horário de funcionamento é de segunda a sexta-feira, das 9h às 18h.\n\nPara agendamentos, o assistente deve dizer que vai conferir na agenda antes de confirmar.\n\nRegras de Resposta\n\nVocê deve responder em linguagem simples, direta e formal, de modo que um cidadão comum compreenda facilmente.\n\nResponda apenas quando tiver mais de 90% de certeza da resposta. Se não tiver certeza, diga claramente “Não tenho certeza sobre isso”.\n\nTodas as respostas devem vir no formato JSON com três campos:\n\nmessages: Array de strings com a mensagem de retorno.\n\nSempre picotada em partes curtas, evitando blocos muito grandes de texto.\n\ncommands: Lista com os pedidos do usuário em relação a documentos, quando houver.\n\nExemplos:\n\n[\"Resumir documento\"]\n\n[\"Explicar parte X\"]\n\n[\"Dúvidas do cliente\"]\n\n[\"Pedido de resumo geral\"]\n\nSó deve ser preenchido quando action também for preenchido.\n\naction:\n\nDeve ser \"send_docs\" sempre que o usuário pedir informações sobre documentos (resumo geral, explicação de parte específica ou quando responder \"sim\" a perguntas como “Você gostaria que eu explicasse este documento?”).\n\nCaso a pergunta não tenha relação com documentos, action deve ser null.\n\nSe ainda não houver certeza sobre a intenção do usuário, action deve ser null.\n\n⚖️ Regra importante:\n\naction e commands ou estão ambos nulos, ou estão ambos preenchidos. Nunca apenas um deles.\n\nExemplos\nExemplo (sem documentos):\n{\n  \"messages\": [\n    \"Olá, tudo bem?\",\n    \"Sou o assistente jurídico do escritório Dooor Advogados.\",\n    \"Nosso escritório fica na Av. Paulista, 1234, São Paulo.\",\n    \"Estamos abertos de segunda a sexta, das 9h às 18h.\",\n    \"Como posso te ajudar hoje?\"\n  ],\n  \"commands\": null,\n  \"action\": null\n}\n\nExemplo (com pedido de documento):\n{\n  \"messages\": [\n    \"Claro!\",\n    \"Posso resumir o documento para você.\"\n  ],\n  \"commands\": [\"Resumir documento\"],\n  \"action\": \"send_docs\"\n}\n\nExemplo (pergunta jurídica simples):\n{\n  \"messages\": [\n    \"O prazo prescricional para cobrar uma dívida em contrato civil costuma ser de 5 anos.\",\n    \"Contudo, é importante verificar o tipo de contrato específico.\",\n    \"Quer que eu confirme esse ponto no documento que você possui?\"\n  ],\n  \"commands\": null,\n  \"action\": null\n}\n\nExemplo (agendamento de horário):\n{\n  \"messages\": [\n    \"Entendi, você gostaria de agendar um horário conosco.\",\n    \"Vou conferir a agenda do escritório e já retorno com as opções disponíveis.\"\n  ],\n  \"commands\": null,\n  \"action\": null\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        4056,
+        -190
+      ],
+      "id": "d0c71048-87fe-4743-bfb6-c3d16a7ccb9e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Edit Fields1').item.json.mimetype }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e2a7faba-08d3-4f05-b97d-1610fdb7b13f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8b4cd048-7223-4d1a-8525-c6fac0f01bd8",
+                    "leftValue": "={{ $('Edit Fields1').item.json.messageType }}",
+                    "rightValue": "audioMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        600,
+        -340
+      ],
+      "id": "40c664e6-91c0-4620-864b-3bbfbb3c7f63",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        4144,
+        30
+      ],
+      "id": "ad46edb3-bf7b-4d9a-b9a4-12a59b64a16f",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "44kd9RZ2BFvXLsQ0",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d0769034-778c-4497-a5c2-4efd185bc4cc",
+              "name": "myNumber",
+              "value": "5548996127075@s.whatsapp.net",
+              "type": "string"
+            },
+            {
+              "id": "d9be6cab-b14d-4d86-abe0-68f3d118d1d6",
+              "name": "toSend",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "85922bef-0f3a-4990-86e4-1396cc41f5d9",
+              "name": "instance",
+              "value": "={{ $json.body.instance }}",
+              "type": "string"
+            },
+            {
+              "id": "ed6deb8b-eaff-4e36-9c34-fe3dbeac2793",
+              "name": "fromMe",
+              "value": "={{ $json.body.data.key.fromMe }}",
+              "type": "boolean"
+            },
+            {
+              "id": "533d1d58-09a8-450c-899b-ddaacab6de7e",
+              "name": "mimetype",
+              "value": "={{ $json.body.data.message.documentMessage.mimetype }}",
+              "type": "string"
+            },
+            {
+              "id": "d2b48ce4-3cc6-4b2a-9310-ad27ea00a741",
+              "name": "message_id",
+              "value": "={{ $json.body.data.key.id }}",
+              "type": "string"
+            },
+            {
+              "id": "c3e7e63d-ce48-47d2-8e46-82cec6da8605",
+              "name": "timestamp",
+              "value": "={{ $json.body.data.messageTimestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "8e512326-8442-4b70-9285-8fa070fdcf6d",
+              "name": "messageType",
+              "value": "={{ $json.body.data.messageType }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        -40
+      ],
+      "id": "b1b5cc55-a5c6-4113-9e3b-8ac646066d55",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "346fecf9-5807-4a5a-89fe-2b3ce48f619a",
+              "leftValue": "={{ $json.fromMe }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        10
+      ],
+      "id": "d7f71e16-6d97-4319-bd99-514f90f1ec00",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7acb7cfe-49e5-4180-b0de-7697b0184468",
+              "leftValue": "={{ $('Edit Fields1').item.json.mimetype }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        380,
+        10
+      ],
+      "id": "285d27fa-a7c5-406e-a431-296cbc46e14a",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Edit Fields1').item.json.instance }}",
+        "remoteJid": "={{ $('Edit Fields1').item.json.toSend }}",
+        "messageText": "Você gostaria que eu explicasse este documento?",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        600,
+        10
+      ],
+      "id": "fd4c5b8f-ad2f-426c-bdfe-675c51ebcc7d",
+      "name": "Evolution API2",
+      "credentials": {
+        "evolutionApi": {
+          "id": "OjoxwCNEKty8yd7w",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "get-media-base64",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "messageId": "={{ $('Webhook').item.json.body.data.key.id }}"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        898,
+        -540
+      ],
+      "id": "f4347c17-519b-4268-9f7b-0cd2c6e56d44",
+      "name": "Evolution API3",
+      "credentials": {
+        "evolutionApi": {
+          "id": "OjoxwCNEKty8yd7w",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data.base64",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1196,
+        -540
+      ],
+      "id": "24dafeea-2812-464d-839b-c2da00f818d1",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1416,
+        -540
+      ],
+      "id": "90ee8a0a-7f75-4893-a0b1-b03795063480",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "=docs_{{ $('Edit Fields1').item.json.toSend }}",
+        "messageData": "={{ $json.text }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1856,
+        -540
+      ],
+      "id": "9087de0a-9e3b-4a1b-aa4e-de186d07157b",
+      "name": "Redis",
+      "credentials": {
+        "redis": {
+          "id": "C4XLM66rp0DzaEjW",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields1').item.json.toSend }}",
+        "sessionTTL": 43200,
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        5240,
+        -70
+      ],
+      "id": "6be440b6-c504-4eca-a807-7ba11a32a93e",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "C4XLM66rp0DzaEjW",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04af594e-0dba-4612-a517-44bf2e7540f9",
+              "name": "message",
+              "value": "={{ $('Webhook').item.json.body.data.message.documentMessage.caption ?? '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2296,
+        -540
+      ],
+      "id": "8faf5e28-090b-4100-84fb-143d2d27112d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fb7017d9-42be-4583-a12d-4c1d38763df8",
+              "name": "message",
+              "value": "={{ $('Webhook').item.json.body.data.message.conversation }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2296,
+        -340
+      ],
+      "id": "df41b222-8437-43bf-8155-883bad12ad13",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d6d39543-93dc-416f-9dee-55c4cca23698",
+              "name": "message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "5dc8cfce-5960-4252-8741-a9807bbfcebe",
+              "name": "toSend",
+              "value": "={{ $('Edit Fields1').item.json.toSend }}",
+              "type": "string"
+            },
+            {
+              "id": "bc103380-4679-412c-8915-692a53557a30",
+              "name": "timestamp",
+              "value": "={{ $('Edit Fields1').item.json.timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "c44bc1dd-b150-4ce4-ac6a-313865c8f8b9",
+              "name": "message_id",
+              "value": "={{ $('Edit Fields1').item.json.message_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2516,
+        -340
+      ],
+      "id": "ed28f0d4-3c3b-4cf8-adeb-a6512efe5e35",
+      "name": "Message"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3396,
+        -390
+      ],
+      "id": "f5f6865d-6b1c-4fa6-a275-08d55fae2518",
+      "name": "Wait",
+      "webhookId": "e47b9848-8e2e-4113-a6ce-e4f4921f6a88"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "messages",
+        "key": "=buffer_{{ $('Edit Fields1').item.json.toSend }}",
+        "keyType": "list",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2956,
+        -340
+      ],
+      "id": "f2216ad8-5d23-49f6-a254-6e9fed2b657e",
+      "name": "Redis3",
+      "credentials": {
+        "redis": {
+          "id": "C4XLM66rp0DzaEjW",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ JSON.parse($json.messages.first()).message_id }}",
+                    "rightValue": "={{ $('Edit Fields1').item.json.message_id }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    },
+                    "id": "36d608a2-d8a3-4c27-aeac-afbf68643ee1"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Not last item"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "38c60bf8-4fd2-4413-9f81-75becd2d1380",
+                    "leftValue": "={{ parseInt(JSON.parse($json.messages.first()).timestamp) + 3 }}",
+                    "rightValue": "={{Math.floor(new Date().getTime() / 1000)}}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Not time enough"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        3176,
+        -415
+      ],
+      "id": "cce8bd8e-9d0e-41e7-9dbd-bea242e8cedb",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "=buffer_{{ $('Edit Fields1').item.json.toSend }}",
+        "messageData": "={{ JSON.stringify($json) }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2736,
+        -340
+      ],
+      "id": "baa7ebc2-17c3-445f-8cab-bcf14ceef7d5",
+      "name": "Redis4",
+      "credentials": {
+        "redis": {
+          "id": "C4XLM66rp0DzaEjW",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "docs",
+        "key": "=docs_{{ $('Edit Fields1').item.json.toSend }}",
+        "keyType": "list",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3836,
+        -190
+      ],
+      "id": "e1552549-7634-42e2-b76f-97f3ddc46ae2",
+      "name": "Redis1",
+      "credentials": {
+        "redis": {
+          "id": "C4XLM66rp0DzaEjW",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "=buffer_{{ $('Edit Fields1').item.json.toSend }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3396,
+        -190
+      ],
+      "id": "b965b99c-71fb-482b-8483-cc76386f9b20",
+      "name": "Redis2",
+      "credentials": {
+        "redis": {
+          "id": "C4XLM66rp0DzaEjW",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9dee4c2b-358b-42d8-a58d-8c322f08d570",
+              "name": "concatenated_messages",
+              "value": "={{ $('Redis3').item.json.messages.reverse().map(m => JSON.parse(m).message).join('\\n') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3616,
+        -190
+      ],
+      "id": "001679e0-8b45-44ab-a013-4a308ceb5962",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data.base64",
+        "options": {
+          "fileName": "audio.mp3",
+          "mimeType": "audio/mpeg"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1856,
+        -140
+      ],
+      "id": "d6b9bae7-ba85-435d-b895-bc77264b5513",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2076,
+        -140
+      ],
+      "id": "a258af51-8665-47e8-8294-3eddcaddceef",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "qadoXSpkDVpIRJqC",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "get-media-base64",
+        "instanceName": "={{ $json.instance }}",
+        "messageId": "={{ $json.message_id }}"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        1636,
+        -140
+      ],
+      "id": "64e54993-293d-4b94-a102-c7178835cdd2",
+      "name": "Evolution API4",
+      "credentials": {
+        "evolutionApi": {
+          "id": "OjoxwCNEKty8yd7w",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fb7017d9-42be-4583-a12d-4c1d38763df8",
+              "name": "message",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2296,
+        -140
+      ],
+      "id": "3dcf28fe-77cc-4369-ae3a-bd08f95778f0",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        5468,
+        110
+      ],
+      "id": "45a53374-b94f-48d6-84c3-91e4bb38e133",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c5e65d72-77eb-4678-82e5-07e2f6b128c3",
+              "name": "return",
+              "value": "={{ \n  JSON.parse(\n    $('AI Agent').item.json.output\n      .split('\\n')\n      .slice(1, -1) // remove a primeira e a última linha\n      .join('\\n')\n      .trim()\n  ) \n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4652,
+        -190
+      ],
+      "id": "8f1f9cd9-ef48-49f7-adbb-cff4933b4025",
+      "name": "Splitar mensagens"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "return.messages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        5170,
+        110
+      ],
+      "id": "e97470de-40e4-41e0-8152-4279170b7225",
+      "name": "Mandar várias mensagens"
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "read-messages",
+        "instanceName": "={{ $('Edit Fields1').item.json.instance }}",
+        "remoteJid": "={{ $('Edit Fields1').item.json.toSend }}",
+        "messageId": "={{ $('Edit Fields1').item.json.message_id }}"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        4432,
+        -190
+      ],
+      "id": "15e0dc04-2f38-4ae9-b610-62fb567f4309",
+      "name": "Evolution API5",
+      "credentials": {
+        "evolutionApi": {
+          "id": "OjoxwCNEKty8yd7w",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Edit Fields1').item.json.instance }}",
+        "remoteJid": "={{ $('Edit Fields1').item.json.toSend }}",
+        "messageText": "={{ $json['return.messages'] }}",
+        "options_message": {
+          "delay": 3000,
+          "linkPreview": true
+        }
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        5688,
+        110
+      ],
+      "id": "113e3a61-87cd-4ea2-b5ad-b0bf4e316b40",
+      "name": "Evolution API1",
+      "credentials": {
+        "evolutionApi": {
+          "id": "OjoxwCNEKty8yd7w",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "ai",
+              "message": "=Você gostaria que eu explicasse este documento?"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        820,
+        60
+      ],
+      "id": "c0c07eeb-854e-4d3d-9ae6-cdc7b342acb8",
+      "name": "Chat Memory Manager1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5c859c3c-525c-422b-b6cf-a9e8c466d92c",
+              "leftValue": "={{ $('Edit Fields1').item.json.fromMe }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2076,
+        -540
+      ],
+      "id": "66d83e0a-f719-4365-ab59-f3109a0cc365",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f3d53cc2-35d6-4a57-9a40-019f1738d548",
+              "leftValue": "={{ $('Splitar mensagens').item.json.return.action }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4872,
+        -190
+      ],
+      "id": "04332950-b503-48c2-88e6-0c411fa87128",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Perguntas:\n{{ JSON.stringify($('Splitar mensagens').item.json.return.commands) }}\n\nDocumentos:\n{{ JSON.stringify( $('Redis1').item.json.docs) }}",
+        "options": {
+          "systemMessage": "Você é um auxiliar jurídico que responde perguntas de documentos jurídicos que o usuário lhe fornece.\nResponda as dúvidas diretamente, em tom neutro e sem saudações.\nResponsa sempre sem palavras juridiquês, focando em um cidadão médio entender."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        5092,
+        -290
+      ],
+      "id": "b5295c1d-4c39-49fa-b993-6b6886edd1d2",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        5120,
+        -70
+      ],
+      "id": "b5a1b1f0-38fd-4119-8e3d-b2df52f362ad",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "44kd9RZ2BFvXLsQ0",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Edit Fields1').item.json.instance }}",
+        "remoteJid": "={{ $('Edit Fields1').item.json.toSend }}",
+        "messageText": "={{ $json.output }}",
+        "options_message": {
+          "delay": 3000,
+          "linkPreview": true
+        }
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        5468,
+        -190
+      ],
+      "id": "f7715da0-0cb5-4a38-984c-3a1a9d1af575",
+      "name": "Evolution API",
+      "credentials": {
+        "evolutionApi": {
+          "id": "OjoxwCNEKty8yd7w",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "=docs_{{ $('Edit Fields1').item.json.toSend }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1636,
+        -540
+      ],
+      "id": "82afbe57-256f-4e81-8aec-d732107f3430",
+      "name": "Redis5",
+      "credentials": {
+        "redis": {
+          "id": "C4XLM66rp0DzaEjW",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "users",
+        "key": "users",
+        "keyType": "list",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        -40
+      ],
+      "id": "c198b984-14a5-4942-95bf-24b7500335ea",
+      "name": "Redis6",
+      "credentials": {
+        "redis": {
+          "id": "C4XLM66rp0DzaEjW",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8bfb586a-77c7-419b-ae8e-199ffb119e3c",
+              "leftValue": "={{ $json.users }}",
+              "rightValue": "={{ $('Edit Fields1').item.json.toSend }}",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            },
+            {
+              "id": "f9b70e41-eada-40ad-8837-50e3327a723e",
+              "leftValue": "={{ $('Edit Fields1').item.json.fromMe }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -280,
+        -40
+      ],
+      "id": "4cb2399a-130e-44aa-a0f8-16b1b448c8ee",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "96f15b2a-a33c-4128-a1b8-611ca1513b02",
+              "leftValue": "={{$('Webhook').item.json.body.data.message.conversation.trim().normalize(\"NFD\").replace(/[\\u0300-\\u036f]/g, \"\").toLowerCase()}}",
+              "rightValue": "hackaton",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -60,
+        210
+      ],
+      "id": "72f47ce4-3dd2-4ada-9a7f-9ffeba5adcf2",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "users",
+        "messageData": "={{ $('Edit Fields1').item.json.toSend }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        160,
+        210
+      ],
+      "id": "8c51de3e-57d1-455d-9ef3-f3c3de96cd6b",
+      "name": "Redis7",
+      "credentials": {
+        "redis": {
+          "id": "C4XLM66rp0DzaEjW",
+          "name": "Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "send_doc",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -940,
+        470
+      ],
+      "id": "de306251-de54-40de-8f37-35244ebe007c",
+      "name": "Webhook1",
+      "webhookId": "7619a7c9-2c08-4a4d-9330-8be4bacd7723"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "body.document.content",
+        "binaryPropertyName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -720,
+        470
+      ],
+      "id": "b634d1ae-84e4-4443-aca2-bdcf6483f91e",
+      "name": "Convert to File2"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "operation": "send-document",
+        "instanceName": "Hackaton",
+        "remoteJid": "={{ \n  (() => {\n    let num = $('Webhook1').item.json.body.client.phone.replace(/\\D/g, ''); // remove tudo que não é número\n    if (!num.startsWith('55')) {\n      num = '55' + num;\n    }\n    return num + '@s.whatsapp.net';\n  })()\n}}",
+        "media": "=data",
+        "caption": "={{ $('Webhook1').item.json.body.client_message }}",
+        "fileName": "={{ $('Webhook1').item.json.body.document.name }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        470
+      ],
+      "id": "5ff88dd8-6042-42e6-b4f6-398a832e3d10",
+      "name": "Evolution API6",
+      "credentials": {
+        "evolutionApi": {
+          "id": "OjoxwCNEKty8yd7w",
+          "name": "Evolution account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "webhook.mimolda.com.br",
+            "user-agent": "axios/1.7.9",
+            "content-length": "1108",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "webhook.mimolda.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6bc8ae0ac5d1",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event": "messages.upsert",
+            "instance": "Hackaton",
+            "data": {
+              "key": {
+                "remoteJid": "554898117371@s.whatsapp.net",
+                "fromMe": false,
+                "id": "3EB0BAA6E0E1C2CF79A8E4"
+              },
+              "pushName": "Cainã",
+              "status": "DELIVERY_ACK",
+              "message": {
+                "messageContextInfo": {
+                  "deviceListMetadata": {
+                    "senderKeyHash": "ZOmZ88+ErHkxrQ==",
+                    "senderTimestamp": "1759332909",
+                    "senderAccountType": "E2EE",
+                    "receiverAccountType": "E2EE",
+                    "recipientKeyHash": "AyDMGO7bu9ozYw==",
+                    "recipientTimestamp": "1758575445"
+                  },
+                  "deviceListMetadataVersion": 2,
+                  "messageSecret": "iumxPbr5McbIf25ebNZiMl8CvmjqbEg5X5kcETWEXmc="
+                },
+                "conversation": "hackaton"
+              },
+              "contextInfo": {
+                "ephemeralSettingTimestamp": "1758068770",
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "CHAT_SETTING",
+                  "initiatedByMe": false
+                }
+              },
+              "messageType": "conversation",
+              "messageTimestamp": 1759514682,
+              "instanceId": "f22a8f47-413e-41cc-92d5-ba693f394c84",
+              "source": "web"
+            },
+            "destination": "https://webhook.mimolda.com.br/webhook/8d02d3f1-b257-4bf9-b532-6411f45acd81",
+            "date_time": "2025-10-03T15:04:42.532Z",
+            "sender": "554896127075@s.whatsapp.net",
+            "server_url": "https://evo.mimolda.com.br",
+            "apikey": "8F4F47E090F1-422B-83F7-37CACB35B6D6"
+          },
+          "webhookUrl": "https://webhook.mimolda.com.br/webhook/8d02d3f1-b257-4bf9-b532-6411f45acd81",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "webhook.mimolda.com.br",
+            "user-agent": "Dart/3.3 (dart:io)",
+            "content-length": "6849",
+            "accept-encoding": "gzip",
+            "content-type": "application/json; charset=utf-8",
+            "x-forwarded-for": "200.135.75.230",
+            "x-forwarded-host": "webhook.mimolda.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6bc8ae0ac5d1",
+            "x-real-ip": "200.135.75.230"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "document_with_message",
+            "client": {
+              "id": 4,
+              "name": "caina rinaldi",
+              "phone": "(48) 99811-7371"
+            },
+            "action": "",
+            "document": {
+              "name": "documento_juridico_teste2.pdf",
+              "content": "JVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnQgaHR0cDovL3d3dy5yZXBvcnRsYWIuY29tCjEgMCBvYmoKPDwKL0YxIDIgMCBSIC9GMiAzIDAgUgo+PgplbmRvYmoKMiAwIG9iago8PAovQmFzZUZvbnQgL0hlbHZldGljYSAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyAvTmFtZSAvRjEgL1N1YnR5cGUgL1R5cGUxIC9UeXBlIC9Gb250Cj4+CmVuZG9iagozIDAgb2JqCjw8Ci9CYXNlRm9udCAvSGVpc2VpTWluLVczIC9EZXNjZW5kYW50Rm9udHMgWyA8PAovQmFzZUZvbnQgL0hlaXNlaU1pbi1XMyAvQ0lEU3lzdGVtSW5mbyA8PAovT3JkZXJpbmcgKEphcGFuMSkgL1JlZ2lzdHJ5IChBZG9iZSkgL1N1cHBsZW1lbnQgMgo+PiAvRFcgMTAwMCAvRm9udERlc2NyaXB0b3IgPDwKL0FzY2VudCA3MjMgL0NhcEhlaWdodCA3MDkgL0Rlc2NlbnQgLTI0MSAvRmxhZ3MgNiAvRm9udEJCb3ggWyAtMTIzIC0yNTcgMTAwMSA5MTAgXSAvRm9udE5hbWUgL0hlaXNlaU1pbi1XMyAKICAvSXRhbGljQW5nbGUgMCAvU3RlbVYgNjkgL1R5cGUgL0ZvbnREZXNjcmlwdG9yIC9YSGVpZ2h0IDQ1MAo+PiAvU3VidHlwZSAvQ0lERm9udFR5cGUwIC9UeXBlIC9Gb250IAogIC9XIFsgMSBbIDI1MCAzMzMgNDA4IDUwMCBdIDUgWyA1MDAgODMzIDc3OCAxODAgMzMzIF0gMTAgWyAzMzMgNTAwIDU2NCAyNTAgMzMzIDI1MCAyNzggNTAwIF0gMTggMjYgNTAwIDI3IAogIDI4IDI3OCAyOSAzMSA1NjQgMzIgWyA0NDQgOTIxIDcyMiA2NjcgXSAzNiBbIDY2NyA3MjIgNjExIDU1NiA3MjIgXSA0MSAKICBbIDcyMiAzMzMgMzg5IDcyMiA2MTEgODg5IDcyMiBdIDQ4IFsgNzIyIDU1NiA3MjIgNjY3IDU1NiA2MTEgNzIyIF0gNTUgWyA3MjIgOTQ0IDcyMiBdIDU4IFsgNzIyIDYxMSAzMzMgNTAwIDMzMyA0NjkgNTAwIDMzMyA0NDQgNTAwIAogIDQ0NCA1MDAgNDQ0IDMzMyA1MDAgXSA3MyBbIDUwMCAyNzggXSA3NSAKICBbIDI3OCA1MDAgMjc4IDc3OCA1MDAgXSA4MCA4MiA1MDAgODMgWyAzMzMgMzg5IDI3OCA1MDAgXSA4NyBbIDUwMCA3MjIgNTAwIF0gOTAgWyA1MDAgNDQ0IDQ4MCAyMDAgNDgwIDMzMyBdIAogIDk3IFsgMjc4IF0gOTkgWyAyMDAgXSAxMDEgWyAzMzMgNTAwIF0gMTAzIFsgNTAwIDE2NyBdIDEwNyBbIDUwMCBdIAogIDEwOSBbIDUwMCAzMzMgXSAxMTEgWyAzMzMgNTU2IF0gMTEzIFsgNTU2IDUwMCBdIDExNyBbIDI1MCBdIDExOSBbIDM1MCAzMzMgNDQ0IF0gCiAgMTIzIFsgNTAwIF0gMTI2IFsgNDQ0IDMzMyBdIDEyOCAxMzcgMzMzIDEzOCBbIDEwMDAgODg5IDI3NiA2MTEgNzIyIDg4OSAzMTAgNjY3IDI3OCBdIDE0NyAKICBbIDI3OCA1MDAgNzIyIDUwMCA1NjQgNzYwIDU2NCA3NjAgXSAxNTcgMTU4IDMwMCAxNTkgWyA1MDAgMzAwIDc1MCBdIDE2MiAxNjMgNzUwIDE2NCAKICAxNjkgNzIyIDE3MCBbIDY2NyA2MTEgXSAxNzIgMTc0IDYxMSAxNzUgMTc4IDMzMyAKICAxNzkgMTg1IDcyMiAxODcgMTkxIDcyMiAxOTIgWyA1NTYgNDQ0IF0gMTk0IDIwMyAKICA0NDQgMjA0IDIwNyAyNzggMjA4IDIxNCA1MDAgMjE2IDIyMiA1MDAgCiAgMjIzIFsgNTU2IDcyMiA2MTEgNTAwIDM4OSA5ODAgNDQ0IF0gMjMxIFsgNTAwIF0gMzIzIFsgNTAwIF0gMzI1IFsgNTAwIF0gMzI3IDM4OSAKICA1MDAgXQo+PiBdIC9FbmNvZGluZyAvVW5pSklTLVVDUzItSCAvTmFtZSAvRjIgL1N1YnR5cGUgL1R5cGUwIC9UeXBlIC9Gb250Cj4+CmVuZG9iago0IDAgb2JqCjw8Ci9Db250ZW50cyA4IDAgUiAvTWVkaWFCb3ggWyAwIDAgNTk1LjI3NTYgODQxLjg4OTggXSAvUGFyZW50IDcgMCBSIC9SZXNvdXJjZXMgPDwKL0ZvbnQgMSAwIFIgL1Byb2NTZXQgWyAvUERGIC9UZXh0IC9JbWFnZUIgL0ltYWdlQyAvSW1hZ2VJIF0KPj4gL1JvdGF0ZSAwIC9UcmFucyA8PAoKPj4gCiAgL1R5cGUgL1BhZ2UKPj4KZW5kb2JqCjUgMCBvYmoKPDwKL1BhZ2VNb2RlIC9Vc2VOb25lIC9QYWdlcyA3IDAgUiAvVHlwZSAvQ2F0YWxvZwo+PgplbmRvYmoKNiAwIG9iago8PAovQXV0aG9yIChcKGFub255bW91c1wpKSAvQ3JlYXRpb25EYXRlIChEOjIwMjUxMDAzMTYyODQ3KzAwJzAwJykgL0NyZWF0b3IgKFwodW5zcGVjaWZpZWRcKSkgL0tleXdvcmRzICgpIC9Nb2REYXRlIChEOjIwMjUxMDAzMTYyODQ3KzAwJzAwJykgL1Byb2R1Y2VyIChSZXBvcnRMYWIgUERGIExpYnJhcnkgLSB3d3cucmVwb3J0bGFiLmNvbSkgCiAgL1N1YmplY3QgKFwodW5zcGVjaWZpZWRcKSkgL1RpdGxlIChcKGFub255bW91c1wpKSAvVHJhcHBlZCAvRmFsc2UKPj4KZW5kb2JqCjcgMCBvYmoKPDwKL0NvdW50IDEgL0tpZHMgWyA0IDAgUiBdIC9UeXBlIC9QYWdlcwo+PgplbmRvYmoKOCAwIG9iago8PAovRmlsdGVyIFsgL0FTQ0lJODVEZWNvZGUgL0ZsYXRlRGVjb2RlIF0gL0xlbmd0aCAyMTIxCj4+CnN0cmVhbQpHYiE7Zj1cZzg0JjpXZURiW1Y5Okc6bTdFJzUlQyMhISthMTxfK2FFWTtPMWFgSjEmYHFUUT42bXJLNW9qMD02NTZuQHFWVlE2YF81J2kkOjBgKVpzWzUvL0FLMyVMIyxSVTgqQl9AIStYZVw4S0ByVTVXcTdbTmUrbVksXFNqXGk1VVkzXkJaQW00SjQ6UUhoZ14qISMwUEhHJD40STJGL1o1RDpKJSxzKm4yT2VTYmExW1pJYC9HXUh0aF1jRCVdaz9zMCZcdGswKjVoRWZpIVUyTWgvSkctOm1kS1FqJVI+Xy9EUmY6REc3aVo/OmA7ckFfV1lwSHIkRTtPblgrckMiQSJzP3RbcGknQzIpbGksQlRRTSdYSV41NWJBQy5pOlxwMkdtS04kbDljXS9KSy5FczAjNS9DQFZoMzcmaCRVLUAqcUJQa2I+cSlrbVEuL2pCPV5DOSc7LTtdImNHNjdmQkddSFFjJ1A+VUMkM1liP1xcQXNULmA+aTNmcFZiU2AkJUBUISQoUEI2PGIsImhPbElUZUlJYyNGcz9HaldUWCgiOERubSFmNittRyoiQCFCSDlIbllCWnUvaDhdKylEbzBBRkNqLy1YS1FrKnIuO2s+USwlJEI9SUptJS5cLj5zJ1ssWTc8ayRFcWpvOkhJSj1BJDhpXl0/LlE1T1I+NjopZWdhQzEoLCsoSFJUSWBCPk9cb0RscVlfNUlCaEhrMT1zNSJELWBHYV8xcTk6WUsmZmlQbVQ2Qj4kXSElKT4kT00nJUBEZGg1MVlTJmpYMy9yT0A/YWJxQStTNidcQU9CIVc6RU0sS1wzNFEyTSQzTkFpc1FcQmFVTWg8OCNaTkRrbGcoSCxbLjJxTS5aR2ZWNHVLcDcqZS1hTC83TzRHVSRAWTg3N2VeP2g6KXJbLzFgc0M1Yk1AJj8nSE0yLTAuTDBRWkc4WT02RENOazA1R3FfUTcvcVlZaENWYzVOcClfUS85akxSRE5saFktZUpGWFFzbGw+NCUhTSQ4RGVTLG1pUS90cSxESE5NTmFEUEc/LGM/c1IxSDEzXFJbLjlcKjc6YnNFIUdJJTkuNGtWcUBndUk7WSZZOEkuWUdHOmBASUg1JVJGPVwwMlBRcWJWdHQmSztGTDZBbVUzaGgpYGcwMzZZcDFnYU0mPWQsTClsSFU4NFQidDQ3bHRpYGpvSFosS21nL0JaaThoay07dDdyPTxLMzgmSmdpKjJhbS4pYDxwJGdraklIbGIqT2k1NlM4dFJeO0NRQG5YN2FRY0djL2c6aidBY2FdJ25kZ0ZVY0hcNjxoR14xW2MoPnI9MDswVWwpOmk8MGJaKkBlTGRvUGoyJUVUNEQpM2ciXTJpYl4+PUByNzh0KSkqNVZKZ2lLdSE2MkBQMjtRQzVjPD50STRdND8lbFtVZmlAIkxuTz0mKDoyUERHWSIkTHJOUFMjNnVhNlNiQDdOSDBUQic7cyZyQTdcUjBhPGl0XlZyaSx0WjZGK2wmOD49NlA+OzcvW0UjPmNkTGViLUFtOWojZyIjT0psajNdZWdfK0IvTzNDQk5BUSEuLm8tQmIsTWRCVF9aKGohP2laSlA8L2w6YGMrOV1SRU1nNl9NMSgraDhKW1xcLXU6NmcjUkQzTipVbSktYz5KLyo+ZnJeLiJUaFZDSTAuXVtpczpvbSZCMEA/P0VuZlZOVjI4QllEQVIhU11nN1RsQzY1S0ZDaDNdaltbKUtJV15DMWsuaFIpRllvTGQjM0FhUVY+PHBlLiRrVTksb2VaKmk1QE5qbDU7clsqNWdzRl9SQzEoUyYuLW84TmZuS3FdTG9aWXRIdGlHVWJjYT9HZjBgZ2NUZ05ZIyFvM1sjZUplLDZZISlvUlkuSV9iRE5ZSzJPMzhocSg2L3FVXHNaXmlFMjVAcz1fM2phOCZNUGxabUZGXCksPjxVb0owKFFXcjZRI1RKcmwkZj5WI2IiRXFFZWJxa0EkcWJIZiJxX3UycUA9aG5mWiUmM0xLcGtxIj5FNCxOYGk2QkA2OyFaNkZ0R0g9LmRuZUVmNE8zWDYsT3JDVjszUGkuWVtkaElmRXVVaSFpLTQ/dVpDYF0mcCViRmktNTtZZVZPV1ZRW2VSOT08cUdeOGI7YVNYW3JkWiRZYmc0LUU/VTNMbjdsLHQ7N2JtayhDKCFTPiReKS8tWkNAWHAyYTxNblFHVUtkXmtpSlJTRWwsKCRZK2tvSTs9PyFCNFIkXS9xJmt0KXA/ME9MRW8lclZoJSdmI3BNbVFnayojST1mTTclKz1eLXJeTDpJLU9PbltJJ2RuMDNwaD44SilYZXFhUVZgZS9pQ01DcFE7a3BzYTlEUzcobkFfbCc1WT1tYSRsYm9eKkMtPjspYy80I2gvWkpBXDtJJDclWFRrb1w5Nz1ZOjpjUHIkWDw7XXEpVixBNVFBNi81VDJeNEFwZylvVlxyKypyWUgyWC5rc09gTz1yNFYhSUIsPm1hPT4hLE1aYipxQFh0RSZDVFtMJS9vVitwSSZGa01fMj1wPW1GNFhkaWVFX2E7TzpaaVdUMFRUTGVsTls9dTM6K0QpW19ybzVURWNoKGRnSjBtIiZrPGBWQ11gYVMwImM1XjkzXWQ9MXQ4U0dMUEFcWiIuaiRvXTlhb1VUYXBaXFNsYUJHM2BYSCwnZGgmSFlFLyQicWtiXVEtT09dY25FU0pXbnUwUjNqYW1bKmNOQEEwWyRvO1tuaFJMLnQxbl1oOi1sQnJiSDRWPCk7XkZpOWJUImJtR25CNDdzcFEpOU5JaFltclJySSU9XzlQOWtDLXJwfj5lbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCA5CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDA3MyAwMDAwMCBuIAowMDAwMDAwMTE0IDAwMDAwIG4gCjAwMDAwMDAyMjEgMDAwMDAgbiAKMDAwMDAwMTcyNCAwMDAwMCBuIAowMDAwMDAxOTI3IDAwMDAwIG4gCjAwMDAwMDE5OTUgMDAwMDAgbiAKMDAwMDAwMjI3OCAwMDAwMCBuIAowMDAwMDAyMzM3IDAwMDAwIG4gCnRyYWlsZXIKPDwKL0lEIApbPGYyYjI3NjMxNjYwNDBjNDBiN2U3Yjc0NmUwYzhjODMwPjxmMmIyNzYzMTY2MDQwYzQwYjdlN2I3NDZlMGM4YzgzMD5dCiUgUmVwb3J0TGFiIGdlbmVyYXRlZCBQREYgZG9jdW1lbnQgLS0gZGlnZXN0IChodHRwOi8vd3d3LnJlcG9ydGxhYi5jb20pCgovSW5mbyA2IDAgUgovUm9vdCA1IDAgUgovU2l6ZSA5Cj4+CnN0YXJ0eHJlZgo0NTQ5CiUlRU9GCg=="
+            },
+            "timestamp": "2025-10-03T18:52:02.665918",
+            "client_message": "oiee"
+          },
+          "webhookUrl": "https://webhook.mimolda.com.br/webhook/send_doc",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Evolution API5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Evolution API3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Evolution API4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Redis6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Evolution API2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution API3": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution API2": {
+      "main": [
+        [
+          {
+            "node": "Evolution API3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Chat Memory Manager1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Redis5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Chat Memory Manager1",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message": {
+      "main": [
+        [
+          {
+            "node": "Redis4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Redis3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis3": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redis2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis4": {
+      "main": [
+        [
+          {
+            "node": "Redis3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Redis1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution API4": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Evolution API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Splitar mensagens": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mandar várias mensagens": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution API5": {
+      "main": [
+        [
+          {
+            "node": "Splitar mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution API1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mandar várias mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Evolution API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution API": {
+      "main": [
+        []
+      ]
+    },
+    "Redis5": {
+      "main": [
+        [
+          {
+            "node": "Redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis6": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "Redis7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File2": {
+      "main": [
+        [
+          {
+            "node": "Evolution API6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution API6": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d7c599f0-5995-4ccc-bd6e-e7babbc0f3dd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f61b8549fa8a9d10537d302ae434a92d9a1bf3ab2ffd442e379d8ab80fe0742f"
+  },
+  "id": "eYn1qvaRso4TbPm1",
+  "tags": []
+}
