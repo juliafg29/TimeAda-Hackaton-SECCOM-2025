@@ -13,8 +13,7 @@ Para auxiliar nos textos dos documentos técnicos: Gemini 2.5 Pro
 
 ## O aplicativo
 
-O aplicativo foi desenvolvido para ser executado em celular android com o comando 
-
+O aplicativo foi desenvolvido na branch master para ser executado em celular android com o comando 
 
 ```bash
 build/app/outputs/flutter-apk/app-release.apk
