@@ -137,7 +137,10 @@ class _MainTabsScreenState extends State<MainTabsScreen> with SingleTickerProvid
             attorneyId: widget.attorneyId,
             onClientsChanged: _loadClients,
           ),
-          DocumentsScreen(clients: _clients),
+          DocumentsScreen(
+            clients: _clients,
+            attorneyId: widget.attorneyId,
+          ),
         ],
       ),
     );

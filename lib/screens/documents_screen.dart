@@ -1,15 +1,23 @@
 // screens/documents_screen.dart
 import 'package:flutter/material.dart';
 import '../models/client.dart';
+import '../models/attorney.dart';
+import '../database/database_helper.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
+import 'package:http/http.dart' as http;
 
 class DocumentsScreen extends StatefulWidget {
   final List<Client> clients;
+  final int attorneyId;
 
-  const DocumentsScreen({Key? key, required this.clients}) : super(key: key);
+  const DocumentsScreen({
+    Key? key, 
+    required this.clients,
+    required this.attorneyId,
+  }) : super(key: key);
 
   @override
   State<DocumentsScreen> createState() => _DocumentsScreenState();
@@ -19,14 +27,39 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _actionController = TextEditingController();
   final _clientMessageController = TextEditingController();
-  final _n8nUrlController = TextEditingController(
-    text: 'https://your-n8n-instance.com/webhook/document',
-  );
 
   Client? _selectedClient;
   String? _fileName;
   Uint8List? _fileBytes;
   bool _isSending = false;
+  String _attorneyN8nUrl = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAttorneyData();
+  }
+
+  Future<void> _loadAttorneyData() async {
+    try {
+      final attorneys = await DatabaseHelper.instance.getAllAttorneys();
+      final attorney = attorneys.firstWhere(
+        (a) => a.id == widget.attorneyId,
+        orElse: () => Attorney(name: '', n8nWebhookUrl: '', phone: null),
+      );
+      
+      if (attorney.id != null) {
+        setState(() {
+          _attorneyN8nUrl = attorney.n8nWebhookUrl;
+        });
+        print('Debug - Attorney n8n URL loaded: $_attorneyN8nUrl');
+      } else {
+        print('Error - Attorney not found with ID: ${widget.attorneyId}');
+      }
+    } catch (e) {
+      print('Error loading attorney data: $e');
+    }
+  }
 
   Future<void> _pickFile() async {
     try {
@@ -79,11 +112,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       return;
     }
 
-    // Debug logs
-    print('Debug - _fileName: $_fileName');
-    print('Debug - _fileBytes length: ${_fileBytes?.length}');
-    print('Debug - _fileBytes is null: ${_fileBytes == null}');
-
     if (_fileName == null || _fileName!.isEmpty) {
       _showMessage('Por favor, selecione um documento', isError: true);
       return;
@@ -93,6 +121,11 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       _showMessage(
           'Erro: Arquivo selecionado está vazio. Tente selecionar novamente.',
           isError: true);
+      return;
+    }
+
+    if (_attorneyN8nUrl.isEmpty) {
+      _showMessage('Erro: URL do n8n do advogado não encontrada', isError: true);
       return;
     }
 
@@ -118,10 +151,21 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         'timestamp': DateTime.now().toIso8601String(),
       };
 
-      // Simular primeira requisição
-      await Future.delayed(const Duration(seconds: 1));
-      print('Primeira requisição - Documento: ${json.encode(documentData)}');
-      _showMessage('Documento enviado para processamento...');
+      print('Enviando para URL: $_attorneyN8nUrl');
+      print('Primeira requisição - Documento: ${documentData['type']}');
+
+      // Primeira requisição - Documento
+      final documentResponse = await http.post(
+        Uri.parse(_attorneyN8nUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(documentData),
+      );
+
+      if (documentResponse.statusCode == 200) {
+        _showMessage('Documento enviado com sucesso!');
+      } else {
+        throw Exception('Erro ao enviar documento: ${documentResponse.statusCode}');
+      }
 
       // Segunda requisição: Mensagem do cliente (se preenchida)
       if (_clientMessageController.text.trim().isNotEmpty) {
@@ -137,45 +181,26 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           'timestamp': DateTime.now().toIso8601String(),
         };
 
-        // Simular segunda requisição
-        await Future.delayed(const Duration(seconds: 1));
-        print('Segunda requisição - Mensagem: ${json.encode(messageData)}');
-        _showMessage('Mensagem do cliente enviada!');
-      }
+        print('Segunda requisição - Mensagem do cliente');
 
-      // Exemplo de como enviar as requisições reais:
-      /*
-      import 'package:http/http.dart' as http;
-
-      // Primeira requisição - Documento
-      final documentResponse = await http.post(
-        Uri.parse(_n8nUrlController.text),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(documentData),
-      );
-
-      if (documentResponse.statusCode != 200) {
-        throw Exception('Erro ao enviar documento: ${documentResponse.statusCode}');
-      }
-
-      // Segunda requisição - Mensagem do cliente (se preenchida)
-      if (_clientMessageController.text.trim().isNotEmpty) {
         final messageResponse = await http.post(
-          Uri.parse(_n8nUrlController.text),
+          Uri.parse(_attorneyN8nUrl),
           headers: {'Content-Type': 'application/json'},
           body: json.encode(messageData),
         );
 
-        if (messageResponse.statusCode != 200) {
+        if (messageResponse.statusCode == 200) {
+          _showMessage('Mensagem do cliente enviada com sucesso!');
+        } else {
           print('Aviso: Erro ao enviar mensagem do cliente: ${messageResponse.statusCode}');
         }
       }
-      */
 
       _showMessage('Todas as informações foram enviadas com sucesso!');
       _clearForm();
     } catch (e) {
-      _showMessage('Erro: $e', isError: true);
+      print('Erro no envio: $e');
+      _showMessage('Erro ao enviar para n8n: $e', isError: true);
     } finally {
       setState(() => _isSending = false);
     }
@@ -407,7 +432,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   void dispose() {
     _actionController.dispose();
     _clientMessageController.dispose();
-    _n8nUrlController.dispose();
     super.dispose();
   }
 }
