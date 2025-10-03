@@ -6,8 +6,13 @@ import '../models/client.dart';
 
 class ClientFormScreen extends StatefulWidget {
   final Client? client;
+  final int attorneyId;  // Add this parameter
 
-  const ClientFormScreen({Key? key, this.client}) : super(key: key);
+  const ClientFormScreen({
+    Key? key,
+    this.client,
+    required this.attorneyId,  // Make it required
+  }) : super(key: key);
 
   @override
   State<ClientFormScreen> createState() => _ClientFormScreenState();
@@ -35,21 +40,33 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         phone: _phoneController.text,
       );
 
-      if (widget.client == null) {
-        await DatabaseHelper.instance.insertClient(client);
-      } else {
-        await DatabaseHelper.instance.updateClient(client);
-      }
+      try {
+        if (widget.client == null) {
+          // Pass both client and attorneyId
+          await DatabaseHelper.instance.insertClient(client, widget.attorneyId);
+        } else {
+          await DatabaseHelper.instance.updateClient(client);
+        }
 
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.client == null
-                ? 'Cliente adicionado com sucesso'
-                : 'Cliente atualizado com sucesso'),
-          ),
-        );
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(widget.client == null
+                  ? 'Cliente adicionado com sucesso'
+                  : 'Cliente atualizado com sucesso'),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erro ao salvar cliente'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }

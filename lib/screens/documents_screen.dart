@@ -146,7 +146,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'Enviar Documento para n8n',
+                        'Enviar Documento para Cliente',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
@@ -155,7 +155,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Selecione um cliente, documento e ação para processar',
+                        'Selecione um cliente e documento para processar',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade600,
@@ -185,28 +185,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         validator: (value) {
                           if (value == null) {
                             return 'Por favor, selecione um cliente';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Action Field
-                      TextFormField(
-                        controller: _actionController,
-                        decoration: const InputDecoration(
-                          labelText: 'Ação',
-                          hintText: 'Ex: Revisar contrato, Abrir processo',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.work_outline),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
-                        maxLines: 2,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, insira uma ação';
                           }
                           return null;
                         },
@@ -295,26 +273,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 20),
-
-                      // N8N URL
-                      TextFormField(
-                        controller: _n8nUrlController,
-                        decoration: const InputDecoration(
-                          labelText: 'URL do Webhook n8n',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.link),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, insira a URL do webhook n8n';
-                          }
-                          return null;
-                        },
-                      ),
-
                       const SizedBox(height: 32),
 
                       // Send Button
@@ -335,7 +293,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                           ),
                         )
                             : const Text(
-                          'ENVIAR PARA N8N',
+                          'ENVIAR PARA CLIENTE',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,

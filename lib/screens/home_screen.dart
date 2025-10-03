@@ -6,11 +6,13 @@ import 'client_form_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String attorneyName;
+  final int attorneyId;
   final VoidCallback? onClientsChanged;
 
   const HomeScreen({
     Key? key,
     required this.attorneyName,
+    required this.attorneyId,
     this.onClientsChanged,
   }) : super(key: key);
 
@@ -30,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadClients() async {
     setState(() => _isLoading = true);
-    final clients = await DatabaseHelper.instance.getAllClients();
+    final clients = await DatabaseHelper.instance.getClientsForAttorney(widget.attorneyId);
     setState(() {
       _clients = clients;
       _isLoading = false;
@@ -62,11 +64,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (confirm == true) {
-      await DatabaseHelper.instance.deleteClient(client.id!);
+      await DatabaseHelper.instance.removeClientFromAttorney(widget.attorneyId, client.id!);
       _loadClients();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cliente removido com sucesso')),
+          const SnackBar(content: Text('Cliente removido da sua lista com sucesso')),
         );
       }
     }
@@ -76,7 +78,10 @@ class _HomeScreenState extends State<HomeScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ClientFormScreen(client: client),
+        builder: (context) => ClientFormScreen(
+          client: client,
+          attorneyId: widget.attorneyId,  // Pass the attorney ID
+        ),
       ),
     );
     _loadClients();

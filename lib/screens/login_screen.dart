@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sistema_advocacia/screens/signin_screen.dart';
+import '../database/database_helper.dart';
+import '../models/attorney.dart';
 import 'main_tabs_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,17 +15,50 @@ class _LoginScreenState extends State<LoginScreen> {
   final _nomeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MainTabsScreen(attorneyName: _nomeController.text),
-        ),
+      final name = _nomeController.text;
+      final attorneys = await DatabaseHelper.instance.getAllAttorneys();
+      final attorney = attorneys.firstWhere(
+            (a) => a.name.toLowerCase() == name.toLowerCase(),
+        orElse: () => Attorney(name: '', n8nWebhookUrl: '', phone: null),
       );
+
+      if (!mounted) return;
+
+      if (attorney.id != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainTabsScreen(
+              attorneyName: attorney.name,
+              attorneyId: attorney.id!,
+            ),
+          ),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SigninScreen(
+              initialName: name,
+              onSignedUp: (id, name) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MainTabsScreen(
+                      attorneyName: name,
+                      attorneyId: id,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

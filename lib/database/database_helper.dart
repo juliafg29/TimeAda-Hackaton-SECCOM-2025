@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import '../models/attorney.dart';
 import '../models/client.dart';
 
 class DatabaseHelper {
@@ -17,44 +19,108 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB() async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      // Use sqflite for mobile platforms
-      return await openDatabase(
-        'law_office.db',
-        version: 1,
-        onCreate: _createDB,
-      );
-    } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      // Use sqflite_ffi for desktop platforms
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-      return await databaseFactory.openDatabase(
-        'law_office.db',
-        options: OpenDatabaseOptions(
+    try {
+      print('Initializing database...');
+      
+      if (Platform.isAndroid || Platform.isIOS) {
+        // Use sqflite for mobile platforms
+        print('Using sqflite for mobile platform');
+        return await openDatabase(
+          'law_office.db',
           version: 1,
           onCreate: _createDB,
-        ),
-      );
-    } else {
-      throw UnsupportedError('Unsupported platform');
+        );
+      } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        // Use sqflite_ffi for desktop platforms
+        print('Using sqflite_ffi for desktop platform');
+        sqfliteFfiInit();
+        databaseFactory = databaseFactoryFfi;
+        return await databaseFactory.openDatabase(
+          'law_office.db',
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: _createDB,
+          ),
+        );
+      } else {
+        throw UnsupportedError('Unsupported platform');
+      }
+    } catch (e) {
+      print('Error initializing database: $e');
+      rethrow;
     }
   }
 
   Future _createDB(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE clients (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        phone TEXT NOT NULL
-      )
-    ''');
+    try {
+      // Create clients table
+      await db.execute('''
+        CREATE TABLE clients (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          phone TEXT NOT NULL
+        )
+      ''');
+
+      // Create attorney table  
+      await db.execute('''
+        CREATE TABLE attorney (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          n8n_webhook_url TEXT NOT NULL,
+          phone INTEGER
+        )
+      ''');
+
+      // Create relationship table
+      await db.execute('''
+        CREATE TABLE attorney_clientes_relationship (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          attorney_id INTEGER NOT NULL,
+          client_id INTEGER NOT NULL,
+          FOREIGN KEY (attorney_id) REFERENCES attorney (id) ON DELETE CASCADE,
+          FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE
+        )
+      ''');
+      
+      print('Database tables created successfully');
+    } catch (e) {
+      print('Error creating database tables: $e');
+      rethrow;
+    }
   }
 
-  Future<int> insertClient(Client client) async {
+  // ------------------------
+  // clientes
+
+  Future<int> insertClient(Client client, int attorneyId) async {
     final db = await database;
-    return await db.insert('clients', client.toMap());
-  }
 
+    // Verificar se o cliente já existe
+    final existingClient = await db.query(
+      'clients',
+      where: 'phone = ?',
+      whereArgs: [client.phone],
+    );
+
+    late int clientId;
+
+    if (existingClient.isEmpty) {
+      // Cliente não existe, inserir novo
+      clientId = await db.insert('clients', client.toMap());
+    } else {
+      // Cliente já existe, usar o ID existente
+      clientId = existingClient.first['id'] as int;
+    }
+
+    // Criar relação advogado-cliente
+    await db.insert('attorney_clientes_relationship', {
+      'attorney_id': attorneyId,
+      'client_id': clientId,
+    });
+
+    return clientId;
+  }
   Future<List<Client>> getAllClients() async {
     final db = await database;
     final result = await db.query('clients', orderBy: 'name ASC');
@@ -78,5 +144,96 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // -------------------------
+  // advogados
+
+  Future<int> insertAttorney(Attorney attorney) async {
+    final db = await database;
+    return await db.insert('attorney', attorney.toMap());
+  }
+
+  Future<List<Attorney>> getAllAttorneys() async {
+    final db = await database;
+    final result = await db.query('attorney', orderBy: 'name ASC');
+    return result.map((map) => Attorney.fromMap(map)).toList();
+  }
+
+  Future<int> updateAttorney(Attorney attorney) async {
+    final db = await database;
+    return await db.update(
+      'attorney',
+      attorney.toMap(),
+      where: 'id = ?',
+      whereArgs: [attorney.id],
+    );
+  }
+
+  Future<int> deleteAttorney(int id) async {
+    final db = await database;
+    return await db.delete(
+      'attorney',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // ------------------------
+  // relacionamento advogado-clientes
+
+  Future<int> insertAttorneyClientRelationship(int attorneyId, int clientId) async {
+    final db = await database;
+    return await db.insert('attorney_clientes_relationship', {
+      'attorney_id': attorneyId,
+      'client_id': clientId,
+    });
+  }
+
+  Future<int> deleteAttorneyClientRelationship(int attorneyId, int clientId) async {
+    final db = await database;
+    return await db.delete(
+      'attorney_clientes_relationship',
+      where: 'attorney_id = ? AND client_id = ?',
+      whereArgs: [attorneyId, clientId],
+    );
+  }
+
+  Future<List<Client>> getClientsForAttorney(int attorneyId) async {
+    final db = await database;
+    final result = await db.rawQuery('''
+      SELECT c.id, c.name, c.phone
+      FROM clients c
+      JOIN attorney_clientes_relationship acr ON c.id = acr.client_id
+      WHERE acr.attorney_id = ?
+      ORDER BY c.name ASC
+    ''', [attorneyId]);
+    return result.map((map) => Client.fromMap(map)).toList();
+  }
+
+  Future<int> removeClientFromAttorney(int attorneyId, int clientId) async {
+    final db = await database;
+    
+    // First, remove the relationship
+    await deleteAttorneyClientRelationship(attorneyId, clientId);
+    
+    // Check if client has any other relationships
+    final remainingRelationships = await db.query(
+      'attorney_clientes_relationship',
+      where: 'client_id = ?',
+      whereArgs: [clientId],
+    );
+    
+    // If no more relationships exist, delete the client completely
+    if (remainingRelationships.isEmpty) {
+      return await deleteClient(clientId);
+    }
+    
+    return 1; // Success, but client was kept due to other relationships
+  }
+
+  Future close() async {
+    final db = await database;
+    db.close();
   }
 }

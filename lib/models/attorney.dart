@@ -2,11 +2,13 @@ class Attorney {
   final int? id;
   final String name;
   final String n8nWebhookUrl;
+  final int? phone;
 
   Attorney({
     this.id,
     required this.name,
     required this.n8nWebhookUrl,
+    required this.phone,
   });
 
   Map<String, dynamic> toMap() {
@@ -14,6 +16,7 @@ class Attorney {
       'id': id,
       'name': name,
       'n8n_webhook_url': n8nWebhookUrl,
+      'phone': phone,
     };
   }
 
@@ -22,6 +25,7 @@ class Attorney {
       id: map['id'] as int?,
       name: map['name'] as String,
       n8nWebhookUrl: map['n8n_webhook_url'] as String,
+      phone: map['phone'] as int?,
     );
   }
 }

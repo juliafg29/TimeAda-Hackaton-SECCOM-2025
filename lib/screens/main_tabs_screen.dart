@@ -7,8 +7,13 @@ import '../models/client.dart';
 
 class MainTabsScreen extends StatefulWidget {
   final String attorneyName;
+  final int attorneyId;
 
-  const MainTabsScreen({Key? key, required this.attorneyName}) : super(key: key);
+  const MainTabsScreen({
+    Key? key, 
+    required this.attorneyName,
+    required this.attorneyId,
+  }) : super(key: key);
 
   @override
   State<MainTabsScreen> createState() => _MainTabsScreenState();
@@ -33,7 +38,7 @@ class _MainTabsScreenState extends State<MainTabsScreen> with SingleTickerProvid
   }
 
   Future<void> _loadClients() async {
-    final clients = await DatabaseHelper.instance.getAllClients();
+    final clients = await DatabaseHelper.instance.getClientsForAttorney(widget.attorneyId);
     setState(() {
       _clients = clients;
     });
@@ -128,6 +133,7 @@ class _MainTabsScreenState extends State<MainTabsScreen> with SingleTickerProvid
         children: [
           HomeScreen(
             attorneyName: widget.attorneyName,
+            attorneyId: widget.attorneyId,
             onClientsChanged: _loadClients,
           ),
           DocumentsScreen(clients: _clients),
